@@ -1,0 +1,1 @@
+defineProps<{ msg: string; }>();
