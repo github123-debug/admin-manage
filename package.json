@@ -18,6 +18,9 @@
   "devDependencies": {
     "@types/node": "^20.6.3",
     "@vitejs/plugin-vue": "^4.2.3",
+    "lib-flexible-computer": "^1.0.2",
+    "postcss-px2rem": "^0.3.0",
+    "px2rem-loader": "^0.1.9",
     "sass": "^1.68.0",
     "sass-loader": "^13.3.2",
     "typescript": "^5.0.2",
