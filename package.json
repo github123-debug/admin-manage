@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "ant-design-vue": "^4.0.3",
+    "canvas-nest.js": "^2.0.4",
     "normalize.css": "^8.0.1",
     "path": "^0.12.7",
     "vue": "^3.3.4",

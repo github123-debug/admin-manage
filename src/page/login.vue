@@ -1,57 +1,69 @@
 <template>
   <div class="login">
-    <div class="box">
-      <a-form
-          :model="formState"
-          name="normal_login"
-          class="login-form"
-          @finish="onFinish"
-          @finishFailed="onFinishFailed"
-      >
-        <a-form-item
-            label="Username"
-            name="username"
-            :rules="[{ required: true, message: 'Please input your username!' }]"
+    <div class="content" id="content">
+      <div class="box">
+        <a-form
+            :model="formState"
+            name="normal_login"
+            class="login-form"
+            @finish="onFinish"
+            @finishFailed="onFinishFailed"
         >
-          <a-input v-model:value="formState.username">
-            <template #prefix>
-              <UserOutlined class="site-form-item-icon"/>
-            </template>
-          </a-input>
-        </a-form-item>
-        <a-form-item
-            label="Password"
-            name="password"
-            :rules="[{ required: true, message: 'Please input your password!' }]"
-        >
-          <a-input-password v-model:value="formState.password">
-            <template #prefix>
-              <LockOutlined class="site-form-item-icon"/>
-            </template>
-          </a-input-password>
-        </a-form-item>
-        <a-form-item>
-          <a-form-item name="remember" no-style>
-            <a-checkbox v-model:checked="formState.remember">Remember me</a-checkbox>
+          <a-form-item
+              label="Username"
+              name="username"
+              :rules="[{ required: true, message: 'Please input your username!' }]"
+          >
+            <a-input v-model:value="formState.username">
+              <template #prefix>
+                <UserOutlined class="site-form-item-icon"/>
+              </template>
+            </a-input>
           </a-form-item>
-          <a class="login-form-forgot" href="">Forgot password</a>
-        </a-form-item>
-        <a-form-item>
-          <a-button :disabled="disabled" type="primary" html-type="submit" class="login-form-button">
-            Log in
-          </a-button>
-          Or
-          <a href="">register now!</a>
-        </a-form-item>
-      </a-form>
+          <a-form-item
+              label="Password"
+              name="password"
+              :rules="[{ required: true, message: 'Please input your password!' }]"
+          >
+            <a-input-password v-model:value="formState.password">
+              <template #prefix>
+                <LockOutlined class="site-form-item-icon"/>
+              </template>
+            </a-input-password>
+          </a-form-item>
+          <a-form-item>
+            <a-form-item name="remember" no-style>
+              <a-checkbox v-model:checked="formState.remember">Remember me</a-checkbox>
+            </a-form-item>
+            <a class="login-form-forgot" href="">Forgot password</a>
+          </a-form-item>
+          <a-form-item>
+            <a-button :disabled="disabled" type="primary" html-type="submit" class="login-form-button">
+              Log in
+            </a-button>
+            Or
+            <a href="">register now!</a>
+            <SwapOutlined @click="changeBackground" :style="{fontSize:'18px',cursor: 'pointer'}"/>
+          </a-form-item>
+        </a-form>
+      </div>
     </div>
-    <canvas id="canvas"></canvas>
+    <!--<canvas id="canvas"></canvas>-->
   </div>
 </template>
 
 <script setup lang="ts">
-import {reactive, computed, onMounted} from 'vue';
+import {reactive, computed, onMounted, onBeforeUnmount} from 'vue';
 import {UserOutlined, LockOutlined} from '@ant-design/icons-vue';
+import {
+  SwapOutlined
+} from '@ant-design/icons-vue';
+// 代码雨背景，需要打开页面中的canvas注释
+// import {rainBackground} from '@/utils/rainBackground.ts';
+// 动态粒子背景，不能实现鼠标跟随动画
+// import {particleBackground} from '@/utils/particleBackground'
+// 动态粒子背景，第三方库引入 https://github.com/hustcc/canvas-nest.js
+import CanvasNest from 'canvas-nest.js';
 
 interface FormState {
   username: string;
@@ -64,60 +76,68 @@ const formState = reactive<FormState>({
   password: '',
   remember: true,
 });
-
-
+// 粒子动画
+let cn: any
 onMounted(() => {
-  loadBackground()
+  const config = {
+    color: '#fff',
+    count: 100,
+    zIndex: 1
+  };
+  const element = document.getElementById('content')
+// 在 element 地方使用 config 渲染效果
+  cn = new CanvasNest(element, config);
 })
+onBeforeUnmount(() => {
+  cn.destroy();
+})
+
+// 提交表单
 const onFinish = (values: any) => {
   console.log('Success:', values);
 };
+// 表单校验失败
 const onFinishFailed = (errorInfo: any) => {
   console.log('Failed:', errorInfo);
 };
 const disabled = computed(() => {
   return !(formState.username && formState.password);
 });
-const loadBackground = () => {
-  let canvas: HTMLCanvasElement = document.querySelector('canvas') as HTMLCanvasElement
-  let ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-  canvas.width = window.innerWidth // 整个屏幕宽度
-  canvas.height = window.innerHeight
-  canvas.style.position = 'fixed'
-  canvas.style.zIndex = '-1'
-  window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth // 整个屏幕宽度
-    canvas.height = window.innerHeight
-  })
-  let str: string[] = '01010100101111abcdefg'.split('')
-  let Arr = Array(Math.ceil(canvas.width / 10)).fill(0) // 向上取整Arr有多少个，并填充0
-
-  const rain = () => {
-    ctx.fillStyle = 'rgba(0,0,0,0.05)' // 绘制整个canvas背景为黑色
-    ctx.fillRect(0, 0, canvas.width, canvas.height) // 以坐标轴（0，0）左上角 绘制矩形 长宽为canvas长宽
-    ctx.fillStyle = '#0f0' // canvas内文字颜色
-    Arr.forEach((item, index) => {
-      ctx.fillText(str[Math.floor(Math.random() * str.length)], index * 10, item + 10) // 在指定的(x,y)位置填充指定的文本.
-      Arr[index] = item > canvas.height || item > 10000 * Math.random() ? 0 : item + 10 // item从0开始不断+10，直到大于屏幕高度或随机数返回0
-    })
-  }
-  setInterval(rain, 40)
+// 切换背景
+const changeBackground = () => {
+  console.log('切换背景')
 }
+
 </script>
 
 <style lang="scss" scoped>
+
 .login {
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  background: url('@/assets/images/loginBg3.jpg') no-repeat fixed ;
+  background-size: cover;
 
-  .box {
-    padding: 20px;
-    border-radius: 5px;
-    background-image: linear-gradient(60deg, #29551a 0%, #37526f 100%);
-    background-blend-mode: multiply;
+
+  .content {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .box {
+      padding: 20px;
+      z-index: 2;
+      background-blend-mode: multiply;
+      background: rgba(255, 255, 255, 0.2);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      border-radius: 5px;
+      box-shadow: inset 0 0 6px rgba(255, 255, 255, -0.2);
+    }
   }
+
 
 }
 
